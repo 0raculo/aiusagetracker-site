@@ -1,302 +1,492 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Usage Tracker - Never get cut off by AI usage caps</title>
-    <meta name="description" content="Track 5-hour windows and weekly limits for Claude, ChatGPT, and more. Widgets + alerts. On-device privacy.">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
-    <style>
-        :root {
-            --bg-primary: #0a0a0a;
-            --bg-secondary: #141414;
-            --bg-card: #1a1a1a;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0a0;
-            --accent-orange: #ff9500;
-            --accent-green: #34c759;
-            --accent-gradient: linear-gradient(135deg, #ff9500, #ff6b00);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Usage Tracker — on-device usage alerts for AI caps</title>
+  <meta name="description" content="On-device iOS tracker for 5-hour windows and weekly AI usage caps. Widgets + threshold alerts. Install via TestFlight." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <!-- Open Graph (nice for sharing) -->
+  <meta property="og:title" content="AI Usage Tracker — on-device usage alerts for AI caps" />
+  <meta property="og:description" content="Track 5-hour windows and weekly limits. Widgets + threshold alerts. Everything on-device." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="assets/aiusagetracker.gif" />
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.6;
-            min-height: 100vh;
-        }
+  <style>
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #141414;
+      --bg-card: #1a1a1a;
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0a0;
+      --accent-orange: #ff9500;
+      --accent-green: #34c759;
+      --accent-gradient: linear-gradient(135deg, #ff9500, #ff6b00);
+      --border: rgba(255, 255, 255, 0.08);
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+    }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 24px;
-        }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        /* Hero Section */
-        .hero {
-            padding: 80px 0 60px;
-            text-align: center;
-        }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
 
-        .hero h1 {
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            font-weight: 700;
-            margin-bottom: 20px;
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
 
-        .hero .subtitle {
-            font-size: clamp(1rem, 2.5vw, 1.25rem);
-            color: var(--text-secondary);
-            max-width: 600px;
-            margin: 0 auto 40px;
-        }
+    /* Hero */
+    .hero {
+      padding: 80px 0 28px;
+      text-align: center;
+    }
 
-        /* CTA Button */
-        .cta-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: var(--accent-gradient);
-            color: white;
-            text-decoration: none;
-            padding: 16px 32px;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 750;
+      margin-bottom: 16px;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
 
-        .cta-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(255, 149, 0, 0.3);
-        }
+    .hero .subtitle {
+      font-size: clamp(1rem, 2.4vw, 1.25rem);
+      color: var(--text-secondary);
+      max-width: 720px;
+      margin: 0 auto 22px;
+    }
 
-        .cta-button svg {
-            width: 24px;
-            height: 24px;
-        }
+    .pill-row {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 0 auto 22px;
+      max-width: 900px;
+    }
 
-        /* Screenshot Section */
-        .screenshot-section {
-            padding: 40px 0 80px;
-            text-align: center;
-        }
+    .pill {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 999px;
+      color: var(--text-secondary);
+      font-size: 0.92rem;
+    }
 
-        .screenshot-wrapper {
-            max-width: 100%;
-            overflow: hidden;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-        }
+    /* CTA */
+    .cta-row {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
 
-        .screenshot-wrapper img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--accent-gradient);
+      color: white;
+      text-decoration: none;
+      padding: 15px 26px;
+      border-radius: 12px;
+      font-size: 1.05rem;
+      font-weight: 650;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: 0;
+    }
 
-        /* Features */
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 24px;
-            padding: 60px 0;
-        }
+    .cta-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(255, 149, 0, 0.28);
+    }
 
-        .feature {
-            background: var(--bg-card);
-            padding: 24px;
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
+    .cta-button svg {
+      width: 22px;
+      height: 22px;
+    }
 
-        .feature-icon {
-            font-size: 2rem;
-            margin-bottom: 12px;
-        }
+    .secondary-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      text-decoration: none;
+      padding: 15px 20px;
+      border-radius: 12px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
 
-        .feature h3 {
-            font-size: 1.1rem;
-            margin-bottom: 8px;
-            color: var(--text-primary);
-        }
+    .secondary-button:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 149, 0, 0.35);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
 
-        .feature p {
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-        }
+    .cta-note {
+      margin-top: 14px;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
 
-        /* FAQ Section */
-        .faq-section {
-            padding: 60px 0 80px;
-        }
+    .cta-note strong { color: #d7d7d7; font-weight: 650; }
 
-        .faq-section h2 {
-            font-size: clamp(1.5rem, 3vw, 2rem);
-            text-align: center;
-            margin-bottom: 40px;
-            color: var(--text-primary);
-        }
+    /* Demo */
+    .demo {
+      padding: 24px 0 68px;
+    }
 
-        .faq-list {
-            max-width: 700px;
-            margin: 0 auto;
-        }
+    .demo-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
 
-        .faq-item {
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
+    .demo-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
 
-        .faq-item h3 {
-            font-size: 1rem;
-            color: var(--accent-orange);
-            margin-bottom: 12px;
-            font-weight: 600;
-        }
+    .demo-caption {
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      text-align: left;
+    }
 
-        .faq-item p {
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-        }
+    /* Sections */
+    .section {
+      padding: 58px 0;
+    }
 
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 40px 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-        }
+    .section h2 {
+      font-size: clamp(1.45rem, 3vw, 2rem);
+      text-align: center;
+      margin-bottom: 30px;
+      color: var(--text-primary);
+    }
 
-        footer p {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
+    /* Features grid */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+    }
 
-        footer a {
-            color: var(--accent-orange);
-            text-decoration: none;
-        }
+    .feature {
+      background: var(--bg-card);
+      padding: 22px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
 
-        footer a:hover {
-            text-decoration: underline;
-        }
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero {
-                padding: 60px 0 40px;
-            }
+    .feature h3 {
+      font-size: 1.05rem;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+      font-weight: 700;
+    }
 
-            .screenshot-section {
-                padding: 20px 0 60px;
-            }
+    .feature p {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
 
-            .features {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    .feature p strong {
+      color: #d7d7d7;
+      font-weight: 650;
+    }
+
+    /* How it works */
+    .how {
+      max-width: 900px;
+      margin: 0 auto;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+    }
+
+    .how-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-top: 12px;
+    }
+
+    .how-item {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .how-item h3 {
+      font-size: 1rem;
+      color: var(--accent-orange);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .how-item p {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    /* FAQ */
+    .faq-list {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .faq-item {
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      padding: 22px;
+      margin-bottom: 14px;
+      border: 1px solid var(--border);
+    }
+
+    .faq-item h3 {
+      font-size: 1rem;
+      color: var(--accent-orange);
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .faq-item p {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    .faq-item p strong {
+      color: #d7d7d7;
+      font-weight: 650;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 36px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    footer p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    footer a {
+      color: var(--accent-orange);
+      text-decoration: none;
+    }
+
+    footer a:hover { text-decoration: underline; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero { padding: 60px 0 20px; }
+      .demo { padding: 18px 0 52px; }
+      .section { padding: 44px 0; }
+      .demo-caption { font-size: 0.92rem; }
+    }
+  </style>
 </head>
+
 <body>
-    <main>
-        <!-- Hero -->
-        <section class="hero">
-            <div class="container">
-                <h1>Never get cut off by AI usage caps.</h1>
-                <p class="subtitle">Track 5-hour windows and weekly limits. Widgets + alerts. On-device.</p>
-                <a href="https://testflight.apple.com/join/PLACEHOLDER" class="cta-button">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-                    </svg>
-                    Join TestFlight
-                </a>
-            </div>
-        </section>
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container">
+        <h1>Never get cut off by AI usage caps.</h1>
+        <p class="subtitle">Track 5-hour windows and weekly limits. Widgets + threshold alerts. On-device.</p>
 
-        <!-- Screenshot -->
-        <section class="screenshot-section">
-            <div class="container">
-                <div class="screenshot-wrapper">
-                    <img src="assets/screenshot.png" alt="AI Usage Tracker app showing dashboard, widgets, and settings">
-                </div>
-            </div>
-        </section>
-
-        <!-- Features -->
-        <section class="features-section">
-            <div class="container">
-                <div class="features">
-                    <div class="feature">
-                        <div class="feature-icon">📊</div>
-                        <h3>6 AI Providers</h3>
-                        <p>Claude, ChatGPT, OpenAI API, Z.ai, Kimi Code, and MiniMax. All in one place.</p>
-                    </div>
-                    <div class="feature">
-                        <div class="feature-icon">🔔</div>
-                        <h3>Smart Alerts</h3>
-                        <p>Get notified when usage windows reset. Never miss your next available slot.</p>
-                    </div>
-                    <div class="feature">
-                        <div class="feature-icon">🔒</div>
-                        <h3>100% On-Device</h3>
-                        <p>No servers. No analytics. Your credentials stay in your iPhone's Keychain.</p>
-                    </div>
-                    <div class="feature">
-                        <div class="feature-icon">📱</div>
-                        <h3>Native Widgets</h3>
-                        <p>Home screen and Lock screen widgets. Check your usage at a glance.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- FAQ -->
-        <section class="faq-section">
-            <div class="container">
-                <h2>Frequently Asked Questions</h2>
-                <div class="faq-list">
-                    <div class="faq-item">
-                        <h3>How does it collect usage data?</h3>
-                        <p>The app authenticates with each platform (Claude, ChatGPT, etc.) through secure login and queries the official usage endpoints of each provider.</p>
-                    </div>
-                    <div class="faq-item">
-                        <h3>Does my data go to any server?</h3>
-                        <p>No. Everything stays on your device. There are no servers, no third-party analytics, no tracking.</p>
-                    </div>
-                    <div class="faq-item">
-                        <h3>How are credentials stored?</h3>
-                        <p>Credentials are stored in the iOS Keychain — the same system your iPhone uses for passwords and Face ID.</p>
-                    </div>
-                    <div class="faq-item">
-                        <h3>What if a provider changes their API?</h3>
-                        <p>The app is updated regularly. If a provider changes something, we release an update. Your local data remains safe.</p>
-                    </div>
-                    <div class="faq-item">
-                        <h3>Does it support multiple accounts?</h3>
-                        <p>Not yet, but it's on the roadmap for v2.0.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer>
-        <div class="container">
-            <p>Made with care for AI power users. <a href="https://github.com/0raculo/aiusagetracker">GitHub</a></p>
+        <div class="pill-row" aria-label="Key benefits">
+          <span class="pill">Before-the-cap alerts (75%, 90%, ...)</span>
+          <span class="pill">Reset countdown timers</span>
+          <span class="pill">Home + Lock Screen widgets</span>
+          <span class="pill">No backend</span>
+          <span class="pill">Keychain storage</span>
         </div>
-    </footer>
+
+        <div class="cta-row">
+          <a href="https://testflight.apple.com/join/Ts6VBGWM" class="cta-button">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+            </svg>
+            Install via TestFlight
+          </a>
+
+          <a href="#how" class="secondary-button">How it works</a>
+          <a href="#faq" class="secondary-button">FAQ</a>
+        </div>
+
+        <p class="cta-note"><strong>No email. No signup.</strong> Not a bypass — status + alerts only.</p>
+      </div>
+    </section>
+
+    <!-- Demo GIF -->
+    <section class="demo">
+      <div class="container">
+        <div class="demo-card">
+          <img src="assets/aiusagetracker.gif" alt="AI Usage Tracker demo showing dashboard gauges, widgets, and alerts">
+          <div class="demo-caption">
+            A quick demo: gauges → widgets → alert thresholds.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="section" id="features">
+      <div class="container">
+        <h2>What it does</h2>
+        <div class="features">
+          <div class="feature">
+            <div class="feature-icon">📊</div>
+            <h3>Multi-provider, one glance</h3>
+            <p>Track multiple subscriptions in one place. Current: Claude, ChatGPT/Codex, OpenAI API, Z.ai, Kimi Code, MiniMax.</p>
+          </div>
+
+          <div class="feature">
+            <div class="feature-icon">🔔</div>
+            <h3>Smart Alerts</h3>
+            <p>Get notified <strong>before</strong> you hit the cap (e.g. 75%, 90%) and when windows reset.</p>
+          </div>
+
+          <div class="feature">
+            <div class="feature-icon">📱</div>
+            <h3>Native Widgets</h3>
+            <p>Home Screen and Lock Screen widgets. Check your status without opening an app.</p>
+          </div>
+
+          <div class="feature">
+            <div class="feature-icon">🔒</div>
+            <h3>On-device by design</h3>
+            <p>No servers. No analytics. Credentials/tokens stored in iOS Keychain. Revoke anytime.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="section" id="how">
+      <div class="container">
+        <h2>How it works</h2>
+
+        <div class="how">
+          <p style="color: var(--text-secondary); font-size: 0.98rem;">
+            Providers don’t expose usage data the same way. AI Usage Tracker supports two integration types:
+          </p>
+
+          <div class="how-grid">
+            <div class="how-item">
+              <h3>API key providers</h3>
+              <p>
+                For providers that support it (e.g. Z.ai, MiniMax), you paste an API key and the app fetches usage directly from the provider.
+                Keys are stored in iOS Keychain.
+              </p>
+            </div>
+
+            <div class="how-item">
+              <h3>Dashboard-only providers</h3>
+              <p>
+                For providers that only expose usage via their web dashboards (e.g. Claude, ChatGPT/Codex, Kimi),
+                you can sign in via an embedded web view <em>or</em> paste an existing session token.
+                The app reads the same usage information shown in the provider dashboard.
+              </p>
+            </div>
+
+            <div class="how-item">
+              <h3>Security model (short)</h3>
+              <p>
+                No MITM. No proxying traffic through our servers. No accounts. No analytics.
+                Everything runs on-device.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section" id="faq">
+      <div class="container">
+        <h2>FAQ</h2>
+
+        <div class="faq-list">
+          <div class="faq-item">
+            <h3>Does it bypass provider limits?</h3>
+            <p>No. It only shows usage status, reset timers, and alerts so you can plan your sessions.</p>
+          </div>
+
+          <div class="faq-item">
+            <h3>Does any data go to a server?</h3>
+            <p>No. There are no servers, no third-party analytics, and no tracking. Data stays on your device.</p>
+          </div>
+
+          <div class="faq-item">
+            <h3>How are credentials stored?</h3>
+            <p>Credentials/tokens are stored in iOS Keychain. You can revoke access anytime by logging out and/or rotating keys/tokens on the provider side.</p>
+          </div>
+
+          <div class="faq-item">
+            <h3>What if a provider changes their dashboard/endpoints?</h3>
+            <p>If a provider changes their dashboard/endpoints, that connector may break until an update is released. Your local data stays on-device.</p>
+          </div>
+
+          <div class="faq-item">
+            <h3>Does it support multiple accounts?</h3>
+            <p>Not yet — it’s on the roadmap.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA repeat -->
+    <section class="section" style="padding-top: 0;">
+      <div class="container" style="text-align:center;">
+        <a href="https://testflight.apple.com/join/Ts6VBGWM" class="cta-button" aria-label="Install AI Usage Tracker via TestFlight">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+          </svg>
+          Install via TestFlight
+        </a>
+        <p class="cta-note"><strong>No email. No signup.</strong> Not a bypass — status + alerts only.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>No backend. On-device only. <a href="https://github.com/0raculo/aiusagetracker">GitHub</a></p>
+    </div>
+  </footer>
 </body>
 </html>
